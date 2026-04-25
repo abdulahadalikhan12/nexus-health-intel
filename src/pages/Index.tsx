@@ -20,11 +20,30 @@ const containerStagger = {
   show: { transition: { staggerChildren: 0.12 } },
 };
 
-const isDesert = (h: Hospital) =>
-  h.capabilities.oncology === "no" ||
-  h.capabilities.dialysis === "no" ||
-  h.capabilities.trauma === "no" ||
-  h.capabilities.trauma === "uncertain";
+/**
+ * "Specialized Desert" = a facility where the system found *real* gaps in
+ * verified care, not just thin data. We consider a result a desert if either:
+ *   - the trust score is below 0.5 (unverified or contradicted), OR
+ *   - any capability is explicitly "no" (a confirmed missing service), OR
+ *   - the validator raised any high-severity flags (≥ 2 warnings).
+ * The previous logic relied on `trauma`/`oncology`/`dialysis` which our
+ * extractor doesn't currently surface — leaving the filter always on.
+ */
+const isDesert = (h: Hospital) => {
+  if (h.trust_score < 0.5) return true;
+  const caps = h.capabilities;
+  if (
+    caps.icu === "no" ||
+    caps.surgery === "no" ||
+    caps.emergency === "no" ||
+    caps.anesthesiology === "no" ||
+    caps.oncology === "no" ||
+    caps.dialysis === "no" ||
+    caps.trauma === "no"
+  )
+    return true;
+  return h.flags.length >= 2;
+};
 
 const Index = () => {
   const [results, setResults] = useState<Hospital[] | null>(null);
@@ -57,8 +76,12 @@ const Index = () => {
 
   const filtered = useMemo(() => {
     if (!results) return [];
+    // Tuned for our real data distribution: most verified results land
+    // around 0.55-0.70 trust. 0.75+ is rare. Lower the bar so the pill
+    // actually returns something on a typical query.
+    const HIGH_TRUST_CUTOFF = 0.55;
     return results.filter((h) => {
-      if (filter === "high") return h.trust_score >= 0.75;
+      if (filter === "high") return h.trust_score >= HIGH_TRUST_CUTOFF;
       if (filter === "rural") return h.region === "rural";
       if (filter === "deserts") return isDesert(h);
       return true;
