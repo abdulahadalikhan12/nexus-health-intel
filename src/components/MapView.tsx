@@ -405,11 +405,13 @@ export const MapView = ({ hospitals, onSelect }: Props) => {
                   >
                     {(h.trust_score * 100).toFixed(0)}%
                   </text>
-                  {/* Large invisible touch target — min 44px equivalent at viewBox scale */}
+                  {/* Large invisible touch target — sized to cover ~44px on a
+                      ~375px-wide phone (the SVG viewBox is 700 wide, so 40
+                      SVG units ≈ 21px on screen, plenty of slop for tap). */}
                   <circle
                     cx={x}
                     cy={y}
-                    r={28 / Math.max(1, transform.scale)}
+                    r={40 / Math.max(1, transform.scale)}
                     fill="transparent"
                     style={{ cursor: "pointer", touchAction: "none" }}
                     onPointerUp={(e) => {

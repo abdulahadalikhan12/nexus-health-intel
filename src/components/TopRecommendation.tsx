@@ -66,10 +66,10 @@ export const TopRecommendation = ({ hospital, alternatives, onOpenTrace }: Props
       initial={{ opacity: 0, y: 24, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: "spring", stiffness: 220, damping: 24 }}
-      className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/5 via-card to-card backdrop-blur-sm p-5 sm:p-7 mb-5 sm:mb-6"
+      className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/5 via-card to-card backdrop-blur-sm p-4 sm:p-7 mb-5 sm:mb-6"
     >
       {/* Soft glow accent */}
-      <div className="absolute -top-24 -right-24 size-64 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
+      <div className="absolute -top-24 -right-24 size-48 sm:size-64 rounded-full bg-primary/15 blur-3xl pointer-events-none" />
 
       <div className="relative">
         {/* Eyebrow */}
@@ -85,51 +85,52 @@ export const TopRecommendation = ({ hospital, alternatives, onOpenTrace }: Props
           </span>
         </div>
 
-        <div className="flex items-start gap-4 sm:gap-5">
+        {/* Header row: title flex-1, gauge shrinks on mobile so title doesn't squeeze. */}
+        <div className="flex items-start gap-3 sm:gap-5">
           <div className="min-w-0 flex-1">
-            <h2 className="text-lg sm:text-2xl font-semibold tracking-tight leading-tight break-words">
+            <h2 className="text-[17px] sm:text-2xl font-semibold tracking-tight leading-tight break-words">
               {hospital.name}
             </h2>
-            <div className="mt-1.5 inline-flex flex-wrap items-center gap-1.5 text-[11px] sm:text-xs text-muted-foreground">
+            <div className="mt-1.5 inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] sm:text-xs text-muted-foreground">
               <MapPin className="size-3 shrink-0" />
-              <span>{hospital.location}</span>
-              <span className="mx-1 text-border">•</span>
+              <span className="break-words">{hospital.location}</span>
+              <span className="text-border">•</span>
               <span className="uppercase tracking-wider text-[10px]">{hospital.region}</span>
-              <span className="mx-1 text-border">•</span>
+              <span className="text-border">•</span>
               <span className="font-mono-tech text-[10px]">PIN {hospital.pin}</span>
             </div>
-
-            <p className="mt-4 text-sm sm:text-[15px] leading-relaxed text-foreground/95">
-              {lead}
-            </p>
-
-            {caveat && (
-              <div className="mt-3 flex items-start gap-2 rounded-lg border border-trust-mid/30 bg-trust-mid/10 text-trust-mid px-3 py-2 text-xs">
-                <ShieldAlert className="size-3.5 mt-0.5 shrink-0" />
-                <span className="leading-snug">{caveat}</span>
-              </div>
-            )}
-
-            <button
-              onClick={() => {
-                haptic("impact");
-                onOpenTrace(hospital);
-              }}
-              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-medium text-primary-foreground transition hover:shadow-[0_0_24px_hsl(var(--primary)/0.5)]"
-            >
-              Inspect verification trace
-              <ArrowRight className="size-3.5" />
-            </button>
           </div>
 
-          <div className="shrink-0">
+          <div className="shrink-0 -mt-1 sm:mt-0">
             <TrustGauge
               score={hospital.trust_score}
               interval={hospital.trust_interval}
-              size={84}
+              size={64}
             />
           </div>
         </div>
+
+        <p className="mt-3 sm:mt-4 text-[14px] sm:text-[15px] leading-relaxed text-foreground/95">
+          {lead}
+        </p>
+
+        {caveat && (
+          <div className="mt-3 flex items-start gap-2 rounded-lg border border-trust-mid/30 bg-trust-mid/10 text-trust-mid px-3 py-2 text-xs">
+            <ShieldAlert className="size-3.5 mt-0.5 shrink-0" />
+            <span className="leading-snug">{caveat}</span>
+          </div>
+        )}
+
+        <button
+          onClick={() => {
+            haptic("impact");
+            onOpenTrace(hospital);
+          }}
+          className="mt-4 inline-flex items-center justify-center gap-1.5 w-full sm:w-auto rounded-lg bg-primary px-4 py-2.5 sm:py-2 text-[13px] sm:text-xs font-medium text-primary-foreground transition hover:shadow-[0_0_24px_hsl(var(--primary)/0.5)] min-h-[44px] sm:min-h-0"
+        >
+          Inspect verification trace
+          <ArrowRight className="size-4 sm:size-3.5" />
+        </button>
       </div>
     </motion.div>
   );

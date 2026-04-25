@@ -69,11 +69,11 @@ const Index = () => {
         </header>
 
         {/* Hero */}
-        <section className="relative pt-10 sm:pt-16 pb-8 sm:pb-10 px-4 sm:px-6">
+        <section className="relative pt-6 sm:pt-16 pb-6 sm:pb-10 px-4 sm:px-6">
           <div className="max-w-4xl mx-auto text-center">
             <AnimatedTitle
               text="Trust-scored medical discovery."
-              className="text-[26px] sm:text-4xl md:text-6xl font-bold tracking-tight leading-[1.15] sm:leading-[1.05] text-balance px-2"
+              className="text-[28px] sm:text-4xl md:text-6xl font-bold tracking-tight leading-[1.1] sm:leading-[1.05] text-balance px-1"
             />
 
             <motion.p
@@ -91,7 +91,7 @@ const Index = () => {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.1, duration: 0.5 }}
-            className="mt-8 sm:mt-10"
+            className="mt-6 sm:mt-10"
           >
             <SearchBar
               onSubmit={handleSearch}
@@ -107,9 +107,9 @@ const Index = () => {
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.3, duration: 0.5 }}
-              className="mt-8 max-w-2xl mx-auto"
+              className="mt-6 sm:mt-8 max-w-2xl mx-auto"
             >
-              <div className="flex items-center gap-3 mb-3 px-1">
+              <div className="flex items-center gap-3 mb-2 sm:mb-3 px-1">
                 <span className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 font-mono-tech">
                   Try
                 </span>
@@ -124,7 +124,7 @@ const Index = () => {
                         setSearchValue(q);
                         handleSearch(q);
                       }}
-                      className="group w-full flex items-center gap-4 px-1 py-3 text-left text-muted-foreground hover:text-foreground transition-colors"
+                      className="group w-full flex items-center gap-3 sm:gap-4 px-1 py-3.5 sm:py-3 text-left text-muted-foreground hover:text-foreground active:text-foreground transition-colors min-h-[52px] sm:min-h-[44px]"
                     >
                       <span className="font-mono-tech text-[10px] text-muted-foreground/40 group-hover:text-primary transition-colors tabular-nums shrink-0 w-6">
                         {String(i + 1).padStart(2, "0")}
@@ -132,7 +132,7 @@ const Index = () => {
                       <span className="text-[13px] sm:text-sm leading-snug flex-1">
                         {q}
                       </span>
-                      <span className="text-primary/0 group-hover:text-primary transition-colors text-sm shrink-0">
+                      <span className="text-primary/40 sm:text-primary/0 group-hover:text-primary transition-colors text-sm shrink-0">
                         →
                       </span>
                     </button>
