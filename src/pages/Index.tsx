@@ -1,12 +1,12 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { LayoutGrid, Map as MapIcon, ArrowLeft } from "lucide-react";
 import { HeartbeatLogo } from "@/components/HeartbeatLogo";
 import { AnimatedTitle } from "@/components/AnimatedTitle";
 import { SearchBar } from "@/components/SearchBar";
-import { FilterPills, type FilterKey } from "@/components/FilterPills";
 import { HospitalCard } from "@/components/HospitalCard";
 import { SkeletonResults } from "@/components/SkeletonResults";
+import { TopRecommendation } from "@/components/TopRecommendation";
 import { TraceDrawer } from "@/components/TraceDrawer";
 import { MapView } from "@/components/MapView";
 import { ScrollScene } from "@/components/ScrollScene";
@@ -20,35 +20,9 @@ const containerStagger = {
   show: { transition: { staggerChildren: 0.12 } },
 };
 
-/**
- * "Specialized Desert" = a facility where the system found *real* gaps in
- * verified care, not just thin data. We consider a result a desert if either:
- *   - the trust score is below 0.5 (unverified or contradicted), OR
- *   - any capability is explicitly "no" (a confirmed missing service), OR
- *   - the validator raised any high-severity flags (≥ 2 warnings).
- * The previous logic relied on `trauma`/`oncology`/`dialysis` which our
- * extractor doesn't currently surface — leaving the filter always on.
- */
-const isDesert = (h: Hospital) => {
-  if (h.trust_score < 0.5) return true;
-  const caps = h.capabilities;
-  if (
-    caps.icu === "no" ||
-    caps.surgery === "no" ||
-    caps.emergency === "no" ||
-    caps.anesthesiology === "no" ||
-    caps.oncology === "no" ||
-    caps.dialysis === "no" ||
-    caps.trauma === "no"
-  )
-    return true;
-  return h.flags.length >= 2;
-};
-
 const Index = () => {
   const [results, setResults] = useState<Hospital[] | null>(null);
   const [loading, setLoading] = useState(false);
-  const [filter, setFilter] = useState<FilterKey>("all");
   const [view, setView] = useState<ViewMode>("list");
   const [traceFor, setTraceFor] = useState<Hospital | null>(null);
   const [lastQuery, setLastQuery] = useState("");
@@ -69,24 +43,13 @@ const Index = () => {
     setLoading(false);
     setLastQuery("");
     setSearchValue("");
-    setFilter("all");
     setTraceFor(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const filtered = useMemo(() => {
-    if (!results) return [];
-    // Tuned for our real data distribution: most verified results land
-    // around 0.55-0.70 trust. 0.75+ is rare. Lower the bar so the pill
-    // actually returns something on a typical query.
-    const HIGH_TRUST_CUTOFF = 0.55;
-    return results.filter((h) => {
-      if (filter === "high") return h.trust_score >= HIGH_TRUST_CUTOFF;
-      if (filter === "rural") return h.region === "rural";
-      if (filter === "deserts") return isDesert(h);
-      return true;
-    });
-  }, [results, filter]);
+  const filtered = results ?? [];
+  const topPick = filtered[0];
+  const restOfList = filtered.slice(1);
 
   return (
     <div className="min-h-screen relative">
@@ -199,9 +162,6 @@ const Index = () => {
                     <ArrowLeft className="size-3.5" />
                     <span>Back</span>
                   </button>
-                  <div className="overflow-x-auto scrollbar-thin -mx-1 px-1">
-                    <FilterPills active={filter} onChange={setFilter} />
-                  </div>
                 </div>
                 <div className="inline-flex p-1 rounded-full bg-card border border-border/60 self-start sm:self-auto">
                   <ViewToggle current={view} setView={setView} mode="list" icon={<LayoutGrid className="size-3.5" />} label="List" />
@@ -227,16 +187,36 @@ const Index = () => {
                       {filtered.length === 0 ? (
                         <EmptyState />
                       ) : (
-                        <motion.div
-                          variants={containerStagger}
-                          initial="hidden"
-                          animate="show"
-                          className="space-y-4 sm:space-y-5"
-                        >
-                          {filtered.map((h) => (
-                            <HospitalCard key={h.id} hospital={h} onOpenTrace={setTraceFor} />
-                          ))}
-                        </motion.div>
+                        <>
+                          {topPick && (
+                            <TopRecommendation
+                              hospital={topPick}
+                              alternatives={restOfList}
+                              onOpenTrace={setTraceFor}
+                            />
+                          )}
+                          {restOfList.length > 0 && (
+                            <>
+                              <p className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-mono-tech mb-3 mt-2">
+                                Other matches
+                              </p>
+                              <motion.div
+                                variants={containerStagger}
+                                initial="hidden"
+                                animate="show"
+                                className="space-y-4 sm:space-y-5"
+                              >
+                                {restOfList.map((h) => (
+                                  <HospitalCard
+                                    key={h.id}
+                                    hospital={h}
+                                    onOpenTrace={setTraceFor}
+                                  />
+                                ))}
+                              </motion.div>
+                            </>
+                          )}
+                        </>
                       )}
                     </>
                   ) : (
