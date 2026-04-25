@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { LayoutGrid, Map as MapIcon, ArrowLeft } from "lucide-react";
 import { HeartbeatLogo } from "@/components/HeartbeatLogo";
 import { AnimatedTitle } from "@/components/AnimatedTitle";
@@ -7,9 +7,14 @@ import { SearchBar } from "@/components/SearchBar";
 import { HospitalCard } from "@/components/HospitalCard";
 import { SkeletonResults } from "@/components/SkeletonResults";
 import { TopRecommendation } from "@/components/TopRecommendation";
-import { TraceDrawer } from "@/components/TraceDrawer";
-import { MapView } from "@/components/MapView";
 import { ScrollScene } from "@/components/ScrollScene";
+
+const MapView = lazy(() =>
+  import("@/components/MapView").then((m) => ({ default: m.MapView })),
+);
+const TraceDrawer = lazy(() =>
+  import("@/components/TraceDrawer").then((m) => ({ default: m.TraceDrawer })),
+);
 import { fetchHospitals, SUGGESTED_QUERIES, TOTAL_INDEXED, type Hospital } from "@/lib/mock";
 import { haptic } from "@/lib/haptics";
 
@@ -220,7 +225,18 @@ const Index = () => {
                       )}
                     </>
                   ) : (
-                    <MapView hospitals={filtered} onSelect={setTraceFor} />
+                    <Suspense
+                      fallback={
+                        <div
+                          className="flex h-[min(70vh,520px)] items-center justify-center rounded-2xl border border-border/60 bg-card/30 text-sm text-muted-foreground"
+                          role="status"
+                        >
+                          Loading map…
+                        </div>
+                      }
+                    >
+                      <MapView hospitals={filtered} onSelect={setTraceFor} />
+                    </Suspense>
                   )}
                 </motion.div>
               </AnimatePresence>
@@ -230,7 +246,9 @@ const Index = () => {
           </div>
         </section>
 
-        <TraceDrawer hospital={traceFor} onClose={() => setTraceFor(null)} />
+        <Suspense fallback={null}>
+          <TraceDrawer hospital={traceFor} onClose={() => setTraceFor(null)} />
+        </Suspense>
       </div>
     </div>
   );

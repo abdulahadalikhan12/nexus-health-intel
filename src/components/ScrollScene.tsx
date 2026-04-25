@@ -1,6 +1,12 @@
+import { lazy, Suspense } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { DnaHelix } from "./three/DnaHelix";
+import { useEnableDnaHelix } from "@/hooks/use-enable-dna-helix";
 import { useScrollProgress } from "@/hooks/use-scroll-progress";
+
+/** Code-split Three.js + R3F so mobile / first paint avoid ~500KB+ parser work. */
+const DnaHelix = lazy(() =>
+  import("./three/DnaHelix").then((m) => ({ default: m.DnaHelix })),
+);
 
 /**
  * Fixed, full-viewport scroll-reactive backdrop:
@@ -11,6 +17,7 @@ import { useScrollProgress } from "@/hooks/use-scroll-progress";
  */
 export const ScrollScene = () => {
   const progress = useScrollProgress();
+  const showHelix = useEnableDnaHelix();
   const { scrollYProgress } = useScroll();
 
   const glowY = useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]);
@@ -36,20 +43,34 @@ export const ScrollScene = () => {
         className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent shadow-[0_0_20px_hsl(var(--primary)/0.6)]"
       />
 
-      {/* DNA helix — anchored to right side on desktop, hidden on small screens */}
-      <motion.div
-        style={{ opacity: helixOpacity }}
-        className="absolute right-[-6vw] top-1/2 -translate-y-1/2 hidden md:block w-[55vw] max-w-[680px] h-[90vh]"
-      >
-        <DnaHelix progress={progress} className="w-full h-full" />
-      </motion.div>
+      {/* DNA helix — desktop only, lazy-loaded (no WebGL on mobile: battery + TBT) */}
+      {showHelix && (
+        <motion.div
+          style={{ opacity: helixOpacity }}
+          className="absolute right-[-6vw] top-1/2 -translate-y-1/2 w-[55vw] max-w-[680px] h-[90vh]"
+        >
+          <Suspense
+            fallback={
+              <div
+                className="size-full rounded-[30%] bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.12)_0%,transparent_65%)] blur-2xl"
+                aria-hidden
+              />
+            }
+          >
+            <DnaHelix progress={progress} className="w-full h-full" />
+          </Suspense>
+        </motion.div>
+      )}
 
-      {/* Mobile: smaller helix bottom-center */}
+      {/* Mobile: static glow only — no Canvas / Three.js */}
       <motion.div
         style={{ opacity: helixOpacity }}
-        className="absolute md:hidden left-1/2 -translate-x-1/2 bottom-[-15vh] w-[120vw] h-[60vh]"
+        className="absolute md:hidden left-1/2 -translate-x-1/2 bottom-[-12vh] w-[110vw] h-[50vh] pointer-events-none"
       >
-        <DnaHelix progress={progress} className="w-full h-full" />
+        <div
+          className="size-full bg-[radial-gradient(ellipse_80%_60%_at_50%_60%,hsl(var(--primary)/0.2)_0%,hsl(280_60%_50%/0.08)_35%,transparent_70%)] blur-3xl"
+          aria-hidden
+        />
       </motion.div>
     </div>
   );

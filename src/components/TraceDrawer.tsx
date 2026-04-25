@@ -1,7 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { X, ShieldCheck, ShieldAlert, ShieldX } from "lucide-react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { atomDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import type { Hospital } from "@/lib/mock";
 import { haptic } from "@/lib/haptics";
 
@@ -96,21 +94,9 @@ export const TraceDrawer = ({ hospital, onClose }: Props) => (
               <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2 font-mono-tech">
                 Raw Trace
               </p>
-              <div className="rounded-xl overflow-hidden border border-border/60 text-xs">
-                <SyntaxHighlighter
-                  language="json"
-                  style={atomDark}
-                  customStyle={{
-                    margin: 0,
-                    background: "hsl(var(--background))",
-                    padding: "1rem",
-                    fontSize: "0.7rem",
-                  }}
-                  wrapLongLines
-                >
-                  {JSON.stringify(hospital.trace, null, 2)}
-                </SyntaxHighlighter>
-              </div>
+              <pre className="rounded-xl border border-border/60 p-3 sm:p-4 m-0 font-mono text-[0.65rem] sm:text-xs leading-relaxed text-foreground/90 bg-background overflow-x-auto whitespace-pre-wrap break-words">
+                {JSON.stringify(hospital.trace, null, 2)}
+              </pre>
             </div>
           </div>
         </motion.aside>
