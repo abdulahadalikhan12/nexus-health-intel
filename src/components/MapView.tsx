@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Minus, Plus, RotateCcw, X } from "lucide-react";
 import type { Hospital } from "@/lib/mock";
 import { PIN_ZONES } from "@/lib/mock";
@@ -21,12 +21,41 @@ const VIEW_H = 540;
 const MIN_SCALE = 1;
 const MAX_SCALE = 5;
 
-const minLat = 24.5, maxLat = 26.5;
-const minLng = 84.5, maxLng = 86.0;
-const project = (lat: number, lng: number) => ({
-  x: ((lng - minLng) / (maxLng - minLng)) * 600 + 50,
-  y: 500 - ((lat - minLat) / (maxLat - minLat)) * 400,
+// Default bounds = Bihar; used when no real coords are available.
+const DEFAULT_BOUNDS = { minLat: 24.5, maxLat: 26.5, minLng: 84.5, maxLng: 86.0 };
+
+interface Bounds { minLat: number; maxLat: number; minLng: number; maxLng: number; }
+
+const computeBounds = (hospitals: Hospital[]): Bounds => {
+  const valid = hospitals.filter(
+    (h) => Number.isFinite(h.coords?.lat) && Number.isFinite(h.coords?.lng) && h.coords.lat !== 0,
+  );
+  if (valid.length === 0) return DEFAULT_BOUNDS;
+  let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
+  for (const h of valid) {
+    minLat = Math.min(minLat, h.coords.lat);
+    maxLat = Math.max(maxLat, h.coords.lat);
+    minLng = Math.min(minLng, h.coords.lng);
+    maxLng = Math.max(maxLng, h.coords.lng);
+  }
+  // Pad each side; floor the span so a single marker doesn't fill the map.
+  const latPad = Math.max((maxLat - minLat) * 0.12, 0.4);
+  const lngPad = Math.max((maxLng - minLng) * 0.12, 0.4);
+  return {
+    minLat: minLat - latPad,
+    maxLat: maxLat + latPad,
+    minLng: minLng - lngPad,
+    maxLng: maxLng + lngPad,
+  };
+};
+
+const makeProjector = (b: Bounds) => (lat: number, lng: number) => ({
+  x: ((lng - b.minLng) / (b.maxLng - b.minLng)) * 600 + 50,
+  y: 500 - ((lat - b.minLat) / (b.maxLat - b.minLat)) * 400,
 });
+
+const isWithin = (b: Bounds, lat: number, lng: number) =>
+  lat >= b.minLat && lat <= b.maxLat && lng >= b.minLng && lng <= b.maxLng;
 
 interface Transform {
   scale: number;
@@ -54,6 +83,26 @@ export const MapView = ({ hospitals, onSelect }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const pointers = useRef<Map<number, { x: number; y: number }>>(new Map());
+
+  // Recompute the projection whenever the result set changes.
+  const bounds = useMemo(() => computeBounds(hospitals), [hospitals]);
+  const project = useMemo(() => makeProjector(bounds), [bounds]);
+  // Bihar-centric PIN-zone overlays: hide them when the current view
+  // doesn't include Bihar (e.g. user searched in Maharashtra).
+  const visiblePinZones = useMemo(
+    () => PIN_ZONES.filter((z) => isWithin(bounds, z.center.lat, z.center.lng)),
+    [bounds],
+  );
+  const regionLabel = useMemo(() => {
+    const states = new Set(
+      hospitals
+        .map((h) => h.location.split(",").pop()?.trim())
+        .filter((s): s is string => Boolean(s)),
+    );
+    if (states.size === 0) return "All India";
+    if (states.size === 1) return [...states][0];
+    return `${states.size} states`;
+  }, [hospitals]);
   const gestureStart = useRef<{
     transform: Transform;
     distance: number;
@@ -203,7 +252,7 @@ export const MapView = ({ hospitals, onSelect }: Props) => {
 
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono-tech">
-          Geographic Cluster — Bihar Region
+          Geographic Cluster — {regionLabel}
         </p>
         <div className="flex items-center gap-2 sm:gap-3 text-[10px] font-mono-tech text-muted-foreground">
           <span className="inline-flex items-center gap-1">
@@ -263,8 +312,8 @@ export const MapView = ({ hospitals, onSelect }: Props) => {
               strokeDasharray={`${4 / transform.scale} ${4 / transform.scale}`}
             />
 
-            {/* PIN-code desert overlays */}
-            {PIN_ZONES.map((z, i) => {
+            {/* PIN-code desert overlays (Bihar-only; auto-hidden out of bounds) */}
+            {visiblePinZones.map((z, i) => {
               const { x, y } = project(z.center.lat, z.center.lng);
               const c = desertColor(z.risk);
               return (

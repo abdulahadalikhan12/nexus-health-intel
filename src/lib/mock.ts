@@ -262,16 +262,22 @@ export async function fetchHospitals(query: string): Promise<Hospital[]> {
   const backend = import.meta.env.VITE_BACKEND_URL as string | undefined;
   if (backend) {
     try {
-      const res = await fetch(`${backend}/query`, {
+      const res = await fetch(`${backend.replace(/\/+$/, "")}/query`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query }),
       });
-      if (!res.ok) throw new Error("backend error");
+      if (!res.ok) throw new Error(`backend ${res.status}`);
       const data = await res.json();
-      if (Array.isArray(data?.results) && data.results.length) return data.results as Hospital[];
-    } catch {
-      /* silent fallback */
+      if (Array.isArray(data?.results) && data.results.length) {
+        // The backend response uses a different shape than this UI's
+        // Hospital type. The api.ts adapter does the mapping (capabilities
+        // dict -> badges, evidence dict -> [] of EvidenceItem, etc.).
+        const { transformBackendResponse } = await import("./api");
+        return transformBackendResponse(data);
+      }
+    } catch (e) {
+      console.warn("Backend call failed, falling back to mock data:", e);
     }
   }
   await new Promise((r) => setTimeout(r, 2400));
