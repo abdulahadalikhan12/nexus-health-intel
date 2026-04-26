@@ -101,6 +101,23 @@ const trustInterval = (score: number, completeness: number | undefined): number 
   return Math.min(0.35, Math.max(0.05, sparsity * 0.3 + (1 - score) * 0.05));
 };
 
+/**
+ * Coerce contact fields from JSON (string, null, or numeric phone from some APIs).
+ */
+const asContactString = (v: unknown): string | undefined => {
+  if (v == null) return undefined;
+  if (typeof v === "number" && Number.isFinite(v)) {
+    const s = String(Math.trunc(v));
+    if (s.length < 10) return undefined;
+    if (s.startsWith("91") && s.length >= 12) return `+${s}`;
+    if (s.length === 10) return `+91${s}`;
+    return s.startsWith("+") ? s : `+${s}`;
+  }
+  const s = String(v).trim();
+  if (!s || s === "null" || s === "undefined" || s.toLowerCase() === "nan") return undefined;
+  return s;
+};
+
 const buildEvidence = (h: BackendHospital): EvidenceItem[] => {
   const out: EvidenceItem[] = [];
   for (const [key, snippet] of Object.entries(h.evidence ?? {})) {
@@ -206,8 +223,8 @@ export function transformBackendResponse(resp: BackendQueryResponse): Hospital[]
         lat: h.location.latitude ?? 0,
         lng: h.location.longitude ?? 0,
       },
-      phone: h.phone ?? undefined,
-      email: h.email ?? undefined,
+      phone: asContactString(h.phone),
+      email: asContactString(h.email),
       capabilities: synthesizeCapabilities(h.capabilities),
       flags: buildFlags(h.flags),
       evidence: buildEvidence(h),
