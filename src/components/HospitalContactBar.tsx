@@ -1,14 +1,12 @@
 import { Mail, MapPinned, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Hospital } from "@/lib/mock";
-import { mailtoHref, telHref } from "@/lib/contact";
 import { googleMapsUrlForHospital } from "@/lib/maps";
 import { haptic } from "@/lib/haptics";
+import { resolveCallAction, resolveEmailAction } from "@/lib/contactActions";
 
 const btnClass =
-  "inline-flex items-center justify-center gap-1.5 rounded-lg border border-border/60 bg-secondary/30 px-2.5 py-2 min-h-[40px] sm:min-h-[36px] text-xs font-medium text-foreground/90 transition-colors";
-const btnClassActive = `${btnClass} hover:bg-secondary/50 hover:border-primary/30 cursor-pointer`;
-const btnClassInactive = `${btnClass} cursor-not-allowed border-border/40 bg-secondary/20 text-muted-foreground/70`;
+  "inline-flex items-center justify-center gap-1.5 rounded-lg border border-border/60 bg-secondary/30 px-2.5 py-2 min-h-[40px] sm:min-h-[36px] text-xs font-medium text-foreground/90 transition-colors hover:bg-secondary/50 hover:border-primary/30";
 
 type Props = {
   hospital: Hospital;
@@ -18,16 +16,14 @@ type Props = {
 };
 
 /**
- * Call + Email (left) + Maps (right). `tel:` / `mailto:` open OS dialer & mail
- * when we have a number/address. Otherwise buttons stay visible (disabled) so
- * the row does not depend on the API having contact fields yet.
+ * Call + Email + Maps. Call/Email use `tel:` / `mailto:` when the API provides
+ * a number or address; otherwise they open a Google search so the row is
+ * always actionable (live API often omits contact fields until backend+ingest).
  */
 export const HospitalContactBar = ({ hospital, mapVariant = "default", className }: Props) => {
   const mapHref = googleMapsUrlForHospital(hospital);
-  const phone = hospital.phone?.trim();
-  const email = hospital.email?.trim();
-  const mailHref = email ? mailtoHref(email, `Inquiry: ${hospital.name}`) : null;
-  const callHref = phone ? telHref(phone) : null;
+  const call = resolveCallAction(hospital);
+  const em = resolveEmailAction(hospital);
 
   return (
     <div
@@ -36,44 +32,32 @@ export const HospitalContactBar = ({ hospital, mapVariant = "default", className
         className,
       )}
     >
-      {callHref ? (
-        <a
-          href={callHref}
-          onClick={() => haptic("tap")}
-          className={btnClassActive}
-          aria-label={`Call ${phone}`}
-        >
-          <Phone className="size-3.5 shrink-0" />
-          <span>Call</span>
-        </a>
-      ) : (
-        <span
-          className={btnClassInactive}
-          title="No phone number in our dataset for this facility yet."
-        >
-          <Phone className="size-3.5 shrink-0" />
-          <span>Call</span>
-        </span>
-      )}
-      {mailHref ? (
-        <a
-          href={mailHref}
-          onClick={() => haptic("tap")}
-          className={btnClassActive}
-          aria-label={`Email ${email}`}
-        >
-          <Mail className="size-3.5 shrink-0" />
-          <span>Email</span>
-        </a>
-      ) : (
-        <span
-          className={btnClassInactive}
-          title="No email address in our dataset for this facility yet."
-        >
-          <Mail className="size-3.5 shrink-0" />
-          <span>Email</span>
-        </span>
-      )}
+      <a
+        href={call.href}
+        {...(call.newTab
+          ? { target: "_blank", rel: "noopener noreferrer" }
+          : { rel: "noopener" })}
+        onClick={() => haptic("tap")}
+        className={btnClass}
+        title={call.title}
+        aria-label={call.title}
+      >
+        <Phone className="size-3.5 shrink-0" />
+        <span>Call</span>
+      </a>
+      <a
+        href={em.href}
+        {...(em.newTab
+          ? { target: "_blank", rel: "noopener noreferrer" }
+          : { rel: "noopener" })}
+        onClick={() => haptic("tap")}
+        className={btnClass}
+        title={em.title}
+        aria-label={em.title}
+      >
+        <Mail className="size-3.5 shrink-0" />
+        <span>Email</span>
+      </a>
       <a
         href={mapHref}
         target="_blank"
@@ -85,6 +69,7 @@ export const HospitalContactBar = ({ hospital, mapVariant = "default", className
             ? "text-primary border border-primary/30 bg-primary/5 hover:text-primary-glow hover:bg-primary/10"
             : "text-muted-foreground border border-border/50 bg-secondary/20 hover:text-primary",
         )}
+        title="Open in Google Maps"
       >
         <MapPinned className="size-3.5 shrink-0 opacity-80" />
         <span>Maps</span>
