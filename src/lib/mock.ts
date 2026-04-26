@@ -58,24 +58,6 @@ export interface Hospital {
   };
 }
 
-/** Aggregated PIN-zone risk used by the desert overlay on the map. */
-export interface PinZone {
-  pin: string;
-  label: string;
-  /** 0..1 — higher = bigger medical desert */
-  risk: number;
-  center: { lat: number; lng: number };
-  radius: number; // svg units
-}
-
-export const PIN_ZONES: PinZone[] = [
-  { pin: "823001", label: "Gaya South", risk: 0.86, center: { lat: 24.7, lng: 84.95 }, radius: 70 },
-  { pin: "845401", label: "Sitamarhi belt", risk: 0.74, center: { lat: 26.35, lng: 85.5 }, radius: 60 },
-  { pin: "854301", label: "Purnia outer", risk: 0.58, center: { lat: 25.78, lng: 87.47 }, radius: 55 },
-  { pin: "800001", label: "Patna metro", risk: 0.18, center: { lat: 25.61, lng: 85.14 }, radius: 50 },
-  { pin: "842001", label: "Muzaffarpur ring", risk: 0.42, center: { lat: 26.12, lng: 85.36 }, radius: 50 },
-];
-
 export const MOCK_HOSPITALS: Hospital[] = [
   {
     id: "aiims-patna",

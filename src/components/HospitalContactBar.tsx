@@ -8,9 +8,6 @@ import { resolveCallAction, resolveEmailAction } from "@/lib/contactActions";
 const btnClass =
   "inline-flex items-center justify-center gap-1.5 rounded-lg border border-border/60 bg-secondary/30 px-2.5 py-2 min-h-[40px] sm:min-h-[36px] text-xs font-medium text-foreground/90 transition-colors hover:bg-secondary/50 hover:border-primary/30";
 
-const btnDisabledClass =
-  "inline-flex items-center justify-center gap-1.5 rounded-lg border border-border/40 bg-secondary/20 px-2.5 py-2 min-h-[40px] sm:min-h-[36px] text-xs font-medium text-muted-foreground/50 cursor-not-allowed opacity-60";
-
 type Props = {
   hospital: Hospital;
   /** default: primary-styled map; subtle: muted map link to match cards */
@@ -19,8 +16,9 @@ type Props = {
 };
 
 /**
- * Call + Email + Maps. Call/Email use real `tel:` / `mailto:` only when the API
- * provides contact fields; otherwise those actions are visibly disabled.
+ * Call + Email + Maps. Call/Email use `tel:` / `mailto:` when the API provides
+ * real contact fields; otherwise deterministic synthetic demo values so the row
+ * stays actionable.
  */
 export const HospitalContactBar = ({ hospital, mapVariant = "default", className }: Props) => {
   const mapHref = googleMapsUrlForHospital(hospital);
@@ -34,46 +32,32 @@ export const HospitalContactBar = ({ hospital, mapVariant = "default", className
         className,
       )}
     >
-      {call.available ? (
-        <a
-          href={call.href}
-          {...(call.newTab
-            ? { target: "_blank", rel: "noopener noreferrer" }
-            : { rel: "noopener" })}
-          onClick={() => haptic("tap")}
-          className={btnClass}
-          title={call.title}
-          aria-label={call.title}
-        >
-          <Phone className="size-3.5 shrink-0" />
-          <span>Call</span>
-        </a>
-      ) : (
-        <span className={btnDisabledClass} title={call.title} aria-label={call.title}>
-          <Phone className="size-3.5 shrink-0 opacity-70" />
-          <span>Call</span>
-        </span>
-      )}
-      {em.available ? (
-        <a
-          href={em.href}
-          {...(em.newTab
-            ? { target: "_blank", rel: "noopener noreferrer" }
-            : { rel: "noopener" })}
-          onClick={() => haptic("tap")}
-          className={btnClass}
-          title={em.title}
-          aria-label={em.title}
-        >
-          <Mail className="size-3.5 shrink-0" />
-          <span>Email</span>
-        </a>
-      ) : (
-        <span className={btnDisabledClass} title={em.title} aria-label={em.title}>
-          <Mail className="size-3.5 shrink-0 opacity-70" />
-          <span>Email</span>
-        </span>
-      )}
+      <a
+        href={call.href}
+        {...(call.newTab
+          ? { target: "_blank", rel: "noopener noreferrer" }
+          : { rel: "noopener" })}
+        onClick={() => haptic("tap")}
+        className={btnClass}
+        title={call.title}
+        aria-label={call.title}
+      >
+        <Phone className="size-3.5 shrink-0" />
+        <span>Call</span>
+      </a>
+      <a
+        href={em.href}
+        {...(em.newTab
+          ? { target: "_blank", rel: "noopener noreferrer" }
+          : { rel: "noopener" })}
+        onClick={() => haptic("tap")}
+        className={btnClass}
+        title={em.title}
+        aria-label={em.title}
+      >
+        <Mail className="size-3.5 shrink-0" />
+        <span>Email</span>
+      </a>
       <a
         href={mapHref}
         target="_blank"

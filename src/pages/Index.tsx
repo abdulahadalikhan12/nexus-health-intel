@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { ArrowLeft, Map } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { HeartbeatLogo } from "@/components/HeartbeatLogo";
 import { AnimatedTitle } from "@/components/AnimatedTitle";
 import { SearchBar } from "@/components/SearchBar";
@@ -64,13 +63,6 @@ const Index = () => {
                 Healthcare<span className="text-primary">.</span>Intel
               </span>
             </div>
-            <Link
-              to="/crisis"
-              className="text-xs font-medium text-muted-foreground hover:text-primary inline-flex items-center gap-1.5 shrink-0"
-            >
-              <Map className="size-3.5" />
-              Crisis map
-            </Link>
           </div>
         </header>
 
