@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { MapPin, ShieldAlert, Sparkles } from "lucide-react";
 import type { Hospital } from "@/lib/mock";
 import { TrustGauge } from "./TrustGauge";
-import { HospitalMapLink } from "./HospitalMapLink";
+import { HospitalContactBar } from "./HospitalContactBar";
 
 interface Props {
   hospital: Hospital;
@@ -120,8 +120,8 @@ export const TopRecommendation = ({ hospital, alternatives }: Props) => {
           </div>
         )}
 
-        <div className="mt-4 pt-3 border-t border-border/40">
-          <HospitalMapLink hospital={hospital} />
+        <div className="mt-4 pt-3 border-t border-border/40 w-full flex flex-wrap justify-end">
+          <HospitalContactBar hospital={hospital} mapVariant="default" />
         </div>
       </div>
     </motion.div>

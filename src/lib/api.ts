@@ -64,6 +64,9 @@ export interface BackendHospital {
   flags: string[];
   evidence: Partial<Record<string, string>>;
   reasoning: string;
+  /** Optional; when present, UI shows Call / Email actions. */
+  phone?: string | null;
+  email?: string | null;
 }
 
 export interface BackendQueryResponse {
@@ -203,6 +206,8 @@ export function transformBackendResponse(resp: BackendQueryResponse): Hospital[]
         lat: h.location.latitude ?? 0,
         lng: h.location.longitude ?? 0,
       },
+      phone: h.phone ?? undefined,
+      email: h.email ?? undefined,
       capabilities: synthesizeCapabilities(h.capabilities),
       flags: buildFlags(h.flags),
       evidence: buildEvidence(h),

@@ -3,7 +3,7 @@ import { MapPin, AlertTriangle, Info } from "lucide-react";
 import type { Hospital } from "@/lib/mock";
 import { TrustGauge } from "./TrustGauge";
 import { CapabilityBadges } from "./CapabilityBadges";
-import { HospitalMapLink } from "./HospitalMapLink";
+import { HospitalContactBar } from "./HospitalContactBar";
 
 interface Props {
   hospital: Hospital;
@@ -66,11 +66,11 @@ export const HospitalCard = ({ hospital }: Props) => (
       </div>
     )}
 
-    <div className="mt-4 sm:mt-5 pt-4 border-t border-border/60 flex flex-wrap items-center justify-between gap-2">
+    <div className="mt-4 sm:mt-5 pt-4 border-t border-border/60 flex flex-wrap items-center justify-between gap-3">
       <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-mono-tech">
         id: {hospital.id}
       </span>
-      <HospitalMapLink hospital={hospital} variant="subtle" />
+      <HospitalContactBar hospital={hospital} mapVariant="subtle" />
     </div>
   </motion.article>
 );

@@ -28,6 +28,10 @@ export interface Hospital {
   /** ± confidence interval around the trust score (0..1) */
   trust_interval: number;
   coords: { lat: number; lng: number };
+  /** When set, "Call" uses tel: so the device opens the dialer with the number. */
+  phone?: string;
+  /** When set, "Email" opens the default client with this address in To. */
+  email?: string;
   capabilities: {
     icu: Capability;
     surgery: Capability;
@@ -75,6 +79,8 @@ export const MOCK_HOSPITALS: Hospital[] = [
     trust_score: 0.88,
     trust_interval: 0.04,
     coords: { lat: 25.6093, lng: 85.1376 },
+    phone: "+91-612-245-1070",
+    email: "helpdesk@aiimspatna.edu.in",
     capabilities: {
       icu: "yes",
       surgery: "yes",
@@ -133,6 +139,8 @@ export const MOCK_HOSPITALS: Hospital[] = [
     trust_score: 0.42,
     trust_interval: 0.18,
     coords: { lat: 24.7914, lng: 85.0002 },
+    phone: "+91-631-123-4561",
+    email: "rhc.gaya@biharhealth.gov.in",
     capabilities: {
       icu: "uncertain",
       surgery: "no",
@@ -194,6 +202,8 @@ export const MOCK_HOSPITALS: Hospital[] = [
     trust_score: 0.61,
     trust_interval: 0.09,
     coords: { lat: 26.1209, lng: 85.3647 },
+    phone: "+91-621-123-4500",
+    email: "dmh.muzafarpur@health.bihar.gov.in",
     capabilities: {
       icu: "yes",
       surgery: "yes",
