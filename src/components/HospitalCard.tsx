@@ -1,14 +1,13 @@
 import { motion } from "framer-motion";
-import { MapPin, AlertTriangle, FileSearch, Info, ShieldCheck, ShieldAlert, ShieldX } from "lucide-react";
+import { MapPin, AlertTriangle, Info, ShieldCheck, ShieldAlert, ShieldX } from "lucide-react";
 import type { Hospital, ValidatorCheck } from "@/lib/mock";
 import { TrustGauge } from "./TrustGauge";
 import { CapabilityBadges } from "./CapabilityBadges";
 import { Collapsible } from "./Collapsible";
-import { haptic } from "@/lib/haptics";
+import { HospitalMapLink } from "./HospitalMapLink";
 
 interface Props {
   hospital: Hospital;
-  onOpenTrace: (h: Hospital) => void;
 }
 
 const cardVariant = {
@@ -22,7 +21,7 @@ const validatorMeta = {
   fail: { Icon: ShieldX, cls: "text-trust-low border-trust-low/30 bg-trust-low/10" },
 } as const;
 
-export const HospitalCard = ({ hospital, onOpenTrace }: Props) => (
+export const HospitalCard = ({ hospital }: Props) => (
   <motion.article
     variants={cardVariant}
     whileHover={{ y: -4, boxShadow: "0 20px 60px hsl(var(--primary) / 0.18)" }}
@@ -114,21 +113,11 @@ export const HospitalCard = ({ hospital, onOpenTrace }: Props) => (
       </Collapsible>
     </div>
 
-    {/* Footer action */}
     <div className="mt-4 sm:mt-5 pt-4 border-t border-border/60 flex flex-wrap items-center justify-between gap-2">
       <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-mono-tech">
         id: {hospital.id}
       </span>
-      <button
-        onClick={() => {
-          haptic("impact");
-          onOpenTrace(hospital);
-        }}
-        className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary-glow transition-colors"
-      >
-        <FileSearch className="size-3.5" />
-        View verification trace
-      </button>
+      <HospitalMapLink hospital={hospital} variant="subtle" />
     </div>
   </motion.article>
 );

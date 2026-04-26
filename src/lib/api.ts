@@ -215,7 +215,7 @@ export function transformBackendResponse(resp: BackendQueryResponse): Hospital[]
         parsed_query: resp.trace.parsed_query,
         retrieved_ids: resp.trace.retrieved_ids,
         steps: resp.trace.steps,
-        // Stat values shown in TraceDrawer header:
+        // Extra metadata for debugging / future UI:
         verification_passes: finding?.issues.length ?? 0,
         latency_ms: resp.trace.steps.length * 1000, // best-effort; backend doesn't surface real latency yet
         sources: ["VF India 10k facility notes"],

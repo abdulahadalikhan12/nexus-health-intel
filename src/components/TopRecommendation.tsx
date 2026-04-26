@@ -1,14 +1,13 @@
 import { motion } from "framer-motion";
-import { ArrowRight, MapPin, ShieldAlert, Sparkles } from "lucide-react";
+import { MapPin, ShieldAlert, Sparkles } from "lucide-react";
 import type { Hospital } from "@/lib/mock";
 import { TrustGauge } from "./TrustGauge";
-import { haptic } from "@/lib/haptics";
+import { HospitalMapLink } from "./HospitalMapLink";
 
 interface Props {
   hospital: Hospital;
   /** Other returned hospitals — used to phrase how this one stands out. */
   alternatives: Hospital[];
-  onOpenTrace: (h: Hospital) => void;
 }
 
 const TONE_BY_TRUST = (s: number) =>
@@ -57,7 +56,7 @@ function buildHeadline(top: Hospital, alternatives: Hospital[]): {
   return { lead, caveat };
 }
 
-export const TopRecommendation = ({ hospital, alternatives, onOpenTrace }: Props) => {
+export const TopRecommendation = ({ hospital, alternatives }: Props) => {
   const { lead, caveat } = buildHeadline(hospital, alternatives);
   const tone = TONE_BY_TRUST(hospital.trust_score);
 
@@ -121,16 +120,9 @@ export const TopRecommendation = ({ hospital, alternatives, onOpenTrace }: Props
           </div>
         )}
 
-        <button
-          onClick={() => {
-            haptic("impact");
-            onOpenTrace(hospital);
-          }}
-          className="mt-4 inline-flex items-center justify-center gap-1.5 w-full sm:w-auto rounded-lg bg-primary px-4 py-2.5 sm:py-2 text-[13px] sm:text-xs font-medium text-primary-foreground transition hover:shadow-[0_0_24px_hsl(var(--primary)/0.5)] min-h-[44px] sm:min-h-0"
-        >
-          Inspect verification trace
-          <ArrowRight className="size-4 sm:size-3.5" />
-        </button>
+        <div className="mt-4 pt-3 border-t border-border/40">
+          <HospitalMapLink hospital={hospital} />
+        </div>
       </div>
     </motion.div>
   );

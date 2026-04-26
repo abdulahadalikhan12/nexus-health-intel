@@ -1,6 +1,6 @@
-import { AnimatePresence, motion } from "framer-motion";
-import { lazy, Suspense, useState } from "react";
-import { LayoutGrid, Map as MapIcon, ArrowLeft } from "lucide-react";
+import { motion } from "framer-motion";
+import { useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { HeartbeatLogo } from "@/components/HeartbeatLogo";
 import { AnimatedTitle } from "@/components/AnimatedTitle";
 import { SearchBar } from "@/components/SearchBar";
@@ -8,17 +8,8 @@ import { HospitalCard } from "@/components/HospitalCard";
 import { SkeletonResults } from "@/components/SkeletonResults";
 import { TopRecommendation } from "@/components/TopRecommendation";
 import { ScrollScene } from "@/components/ScrollScene";
-
-const MapView = lazy(() =>
-  import("@/components/MapView").then((m) => ({ default: m.MapView })),
-);
-const TraceDrawer = lazy(() =>
-  import("@/components/TraceDrawer").then((m) => ({ default: m.TraceDrawer })),
-);
 import { fetchHospitals, SUGGESTED_QUERIES, TOTAL_INDEXED, type Hospital } from "@/lib/mock";
 import { haptic } from "@/lib/haptics";
-
-type ViewMode = "list" | "map";
 
 const containerStagger = {
   hidden: {},
@@ -28,8 +19,6 @@ const containerStagger = {
 const Index = () => {
   const [results, setResults] = useState<Hospital[] | null>(null);
   const [loading, setLoading] = useState(false);
-  const [view, setView] = useState<ViewMode>("list");
-  const [traceFor, setTraceFor] = useState<Hospital | null>(null);
   const [lastQuery, setLastQuery] = useState("");
   const [searchValue, setSearchValue] = useState("");
 
@@ -48,7 +37,6 @@ const Index = () => {
     setLoading(false);
     setLastQuery("");
     setSearchValue("");
-    setTraceFor(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -156,140 +144,62 @@ const Index = () => {
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5 sm:mb-6"
+                className="mb-5 sm:mb-6"
               >
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                  <button
-                    onClick={handleReset}
-                    aria-label="Back to search"
-                    className="inline-flex items-center gap-1.5 shrink-0 px-3 py-2 rounded-full text-xs font-medium bg-card border border-border/60 text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-colors min-h-[36px]"
-                  >
-                    <ArrowLeft className="size-3.5" />
-                    <span>Back</span>
-                  </button>
-                </div>
-                <div className="inline-flex p-1 rounded-full bg-card border border-border/60 self-start sm:self-auto">
-                  <ViewToggle current={view} setView={setView} mode="list" icon={<LayoutGrid className="size-3.5" />} label="List" />
-                  <ViewToggle current={view} setView={setView} mode="map" icon={<MapIcon className="size-3.5" />} label="Map" />
-                </div>
+                <button
+                  onClick={handleReset}
+                  aria-label="Back to search"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium bg-card border border-border/60 text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-colors min-h-[36px]"
+                >
+                  <ArrowLeft className="size-3.5" />
+                  <span>Back</span>
+                </button>
               </motion.div>
             )}
 
             {loading && <SkeletonResults />}
 
             {!loading && results && (
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={view}
-                  initial={{ opacity: 0, x: view === "list" ? -30 : 30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: view === "list" ? 30 : -30 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                >
-                  {view === "list" ? (
-                    <>
-                      <ResultsHeader query={lastQuery} count={filtered.length} total={results.length} />
-                      {filtered.length === 0 ? (
-                        <EmptyState />
-                      ) : (
-                        <>
-                          {topPick && (
-                            <TopRecommendation
-                              hospital={topPick}
-                              alternatives={restOfList}
-                              onOpenTrace={setTraceFor}
-                            />
-                          )}
-                          {restOfList.length > 0 && (
-                            <>
-                              <p className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-mono-tech mb-3 mt-2">
-                                Other matches
-                              </p>
-                              <motion.div
-                                variants={containerStagger}
-                                initial="hidden"
-                                animate="show"
-                                className="space-y-4 sm:space-y-5"
-                              >
-                                {restOfList.map((h) => (
-                                  <HospitalCard
-                                    key={h.id}
-                                    hospital={h}
-                                    onOpenTrace={setTraceFor}
-                                  />
-                                ))}
-                              </motion.div>
-                            </>
-                          )}
-                        </>
-                      )}
-                    </>
-                  ) : (
-                    <Suspense
-                      fallback={
-                        <div
-                          className="flex h-[min(70vh,520px)] items-center justify-center rounded-2xl border border-border/60 bg-card/30 text-sm text-muted-foreground"
-                          role="status"
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                <ResultsHeader query={lastQuery} count={filtered.length} total={results.length} />
+                {filtered.length === 0 ? (
+                  <EmptyState />
+                ) : (
+                  <>
+                    {topPick && (
+                      <TopRecommendation hospital={topPick} alternatives={restOfList} />
+                    )}
+                    {restOfList.length > 0 && (
+                      <>
+                        <p className="text-[10px] sm:text-xs uppercase tracking-widest text-muted-foreground font-mono-tech mb-3 mt-2">
+                          Other matches
+                        </p>
+                        <motion.div
+                          variants={containerStagger}
+                          initial="hidden"
+                          animate="show"
+                          className="space-y-4 sm:space-y-5"
                         >
-                          Loading map…
-                        </div>
-                      }
-                    >
-                      <MapView hospitals={filtered} onSelect={setTraceFor} />
-                    </Suspense>
-                  )}
-                </motion.div>
-              </AnimatePresence>
+                          {restOfList.map((h) => (
+                            <HospitalCard key={h.id} hospital={h} />
+                          ))}
+                        </motion.div>
+                      </>
+                    )}
+                  </>
+                )}
+              </motion.div>
             )}
 
             {!loading && !results && <IdleState />}
           </div>
         </section>
-
-        <Suspense fallback={null}>
-          <TraceDrawer hospital={traceFor} onClose={() => setTraceFor(null)} />
-        </Suspense>
       </div>
     </div>
-  );
-};
-
-const ViewToggle = ({
-  current,
-  setView,
-  mode,
-  icon,
-  label,
-}: {
-  current: "list" | "map";
-  setView: (m: "list" | "map") => void;
-  mode: "list" | "map";
-  icon: React.ReactNode;
-  label: string;
-}) => {
-  const active = current === mode;
-  return (
-    <button
-      onClick={() => {
-        if (current !== mode) haptic("select");
-        setView(mode);
-      }}
-      className={`relative inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium transition-colors min-h-[36px] ${
-        active ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-      }`}
-    >
-      {active && (
-        <motion.span
-          layoutId="view-toggle"
-          className="absolute inset-0 rounded-full bg-primary"
-          transition={{ type: "spring", stiffness: 380, damping: 32 }}
-        />
-      )}
-      <span className="relative flex items-center gap-1.5">
-        {icon}
-        {label}
-      </span>
-    </button>
   );
 };
 
@@ -328,8 +238,8 @@ const PIPELINE = [
   },
   {
     k: "Transparency",
-    v: "Full trace per result",
-    d: "Inspect every step and citation.",
+    v: "Trust, evidence, Maps",
+    d: "Scores and sources in one place — open Google Maps when you are ready to visit.",
     metric: "100%",
     metricLabel: "audit",
   },
