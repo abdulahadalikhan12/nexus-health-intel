@@ -21,9 +21,9 @@ export const HospitalCard = ({ hospital }: Props) => (
     transition={{ type: "spring", stiffness: 260, damping: 22 }}
     className="rounded-2xl bg-card border border-border/60 p-4 sm:p-6 backdrop-blur-sm"
   >
-    {/* Header row */}
+    {/* Header: name, location, Call / Email / Maps (under name), trust on the right */}
     <div className="flex items-start justify-between gap-3 sm:gap-4 mb-4 sm:mb-5">
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 pr-1">
         <h3 className="text-base sm:text-xl font-semibold tracking-tight break-words">{hospital.name}</h3>
         <div className="mt-1.5 inline-flex flex-wrap items-center gap-1.5 rounded-full bg-secondary/60 px-2.5 py-1 text-[11px] sm:text-xs text-muted-foreground max-w-full">
           <MapPin className="size-3 shrink-0" />
@@ -33,8 +33,13 @@ export const HospitalCard = ({ hospital }: Props) => (
           <span className="mx-1 text-border hidden sm:inline">•</span>
           <span className="font-mono-tech text-[10px]">PIN {hospital.pin}</span>
         </div>
+        <HospitalContactBar
+          hospital={hospital}
+          mapVariant="subtle"
+          className="mt-3 w-full max-w-full"
+        />
       </div>
-      <div className="shrink-0">
+      <div className="shrink-0 self-start">
         <TrustGauge score={hospital.trust_score} interval={hospital.trust_interval} size={72} />
       </div>
     </div>
@@ -66,11 +71,10 @@ export const HospitalCard = ({ hospital }: Props) => (
       </div>
     )}
 
-    <div className="mt-4 sm:mt-5 pt-4 border-t border-border/60 flex flex-wrap items-center justify-between gap-3">
+    <div className="mt-4 sm:mt-5 pt-4 border-t border-border/60">
       <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-mono-tech">
         id: {hospital.id}
       </span>
-      <HospitalContactBar hospital={hospital} mapVariant="subtle" />
     </div>
   </motion.article>
 );

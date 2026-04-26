@@ -84,9 +84,9 @@ export const TopRecommendation = ({ hospital, alternatives }: Props) => {
           </span>
         </div>
 
-        {/* Header row: title flex-1, gauge shrinks on mobile so title doesn't squeeze. */}
+        {/* Name + location + Call / Email / Maps under name; trust ring on the right */}
         <div className="flex items-start gap-3 sm:gap-5">
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 pr-1">
             <h2 className="text-[17px] sm:text-2xl font-semibold tracking-tight leading-tight break-words">
               {hospital.name}
             </h2>
@@ -98,9 +98,14 @@ export const TopRecommendation = ({ hospital, alternatives }: Props) => {
               <span className="text-border">•</span>
               <span className="font-mono-tech text-[10px]">PIN {hospital.pin}</span>
             </div>
+            <HospitalContactBar
+              hospital={hospital}
+              mapVariant="default"
+              className="mt-3 w-full max-w-full"
+            />
           </div>
 
-          <div className="shrink-0 -mt-1 sm:mt-0">
+          <div className="shrink-0 self-start -mt-1 sm:mt-0">
             <TrustGauge
               score={hospital.trust_score}
               interval={hospital.trust_interval}
@@ -119,10 +124,6 @@ export const TopRecommendation = ({ hospital, alternatives }: Props) => {
             <span className="leading-snug">{caveat}</span>
           </div>
         )}
-
-        <div className="mt-4 pt-3 border-t border-border/40 w-full flex flex-wrap justify-end">
-          <HospitalContactBar hospital={hospital} mapVariant="default" />
-        </div>
       </div>
     </motion.div>
   );
