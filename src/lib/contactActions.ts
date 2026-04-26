@@ -1,11 +1,11 @@
 import type { Hospital } from "@/lib/mock";
 import { mailtoHref, telHref } from "@/lib/contact";
+import { syntheticGmailStyle, syntheticIndianPhone } from "@/lib/syntheticContact";
 
-function searchUrl(query: string): string {
-  return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-}
-
-/** When the API has a real number → `tel:`; otherwise a web search (always works). */
+/**
+ * When the API provides a number → `tel:`. When missing, use a per-facility
+ * synthetic +91 number (demo / placeholder — not a verified line).
+ */
 export function resolveCallAction(h: Hospital): {
   href: string;
   newTab: boolean;
@@ -18,14 +18,18 @@ export function resolveCallAction(h: Hospital): {
       return { href, newTab: false, title: `Call ${phone}` };
     }
   }
+  const demo = syntheticIndianPhone(h.id);
   return {
-    href: searchUrl(`${h.name} ${h.location} India phone contact`),
-    newTab: true,
-    title: "Search for a phone number (not stored in our dataset for this facility)",
+    href: telHref(demo),
+    newTab: false,
+    title: `Demo: synthetic India mobile for UI — ${demo}`,
   };
 }
 
-/** When the API has an address → `mailto:`; otherwise a web search. */
+/**
+ * When the API provides email → `mailto:`. Otherwise a Gmail-style demo address
+ * (compose opens; not guaranteed to be a real inbox).
+ */
 export function resolveEmailAction(h: Hospital): {
   href: string;
   newTab: boolean;
@@ -39,9 +43,10 @@ export function resolveEmailAction(h: Hospital): {
       title: `Email ${email}`,
     };
   }
+  const demo = syntheticGmailStyle(h.name, h.id);
   return {
-    href: searchUrl(`${h.name} ${h.location} email contact India hospital`),
-    newTab: true,
-    title: "Search for email (not stored in our dataset for this facility)",
+    href: mailtoHref(demo, `Inquiry: ${h.name}`),
+    newTab: false,
+    title: `Demo: synthetic email for UI — ${demo}`,
   };
 }
