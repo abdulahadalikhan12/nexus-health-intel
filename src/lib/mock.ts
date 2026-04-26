@@ -49,6 +49,13 @@ export interface Hospital {
   reasoning: string;
   validator: ValidatorCheck[];
   trace: Record<string, unknown>;
+  /** Decomposed trust inputs (from API); justifies the trust % with step-level factors. */
+  trust_breakdown?: {
+    completeness: number;
+    consistency: number;
+    validator: number;
+    evidence_strength: number;
+  };
 }
 
 /** Aggregated PIN-zone risk used by the desert overlay on the map. */
@@ -268,7 +275,29 @@ export const SUGGESTED_QUERIES: string[] = [
   "Dialysis-capable facilities serving rural districts",
 ];
 
-export async function fetchHospitals(query: string): Promise<Hospital[]> {
+export type QueryTrace = {
+  steps: string[];
+  parsed_query?: Record<string, unknown>;
+};
+
+const DEFAULT_TB = {
+  completeness: 0.72,
+  consistency: 0.85,
+  validator: 0.78,
+  evidence_strength: 0.68,
+};
+
+function withDemoTrustBreakdown(hospitals: Hospital[]): Hospital[] {
+  return hospitals.map((h) => ({
+    ...h,
+    trust_breakdown: h.trust_breakdown ?? DEFAULT_TB,
+  }));
+}
+
+export async function fetchHospitals(query: string): Promise<{
+  hospitals: Hospital[];
+  trace: QueryTrace | null;
+}> {
   const backend = import.meta.env.VITE_BACKEND_URL as string | undefined;
   if (backend) {
     try {
@@ -280,16 +309,30 @@ export async function fetchHospitals(query: string): Promise<Hospital[]> {
       if (!res.ok) throw new Error(`backend ${res.status}`);
       const data = await res.json();
       if (Array.isArray(data?.results) && data.results.length) {
-        // The backend response uses a different shape than this UI's
-        // Hospital type. The api.ts adapter does the mapping (capabilities
-        // dict -> badges, evidence dict -> [] of EvidenceItem, etc.).
         const { transformBackendResponse } = await import("./api");
-        return transformBackendResponse(data);
+        const hospitals = transformBackendResponse(data);
+        const trace: QueryTrace | null = data.trace
+          ? { steps: data.trace.steps ?? [], parsed_query: data.trace.parsed_query }
+          : null;
+        return { hospitals, trace };
       }
     } catch (e) {
       console.warn("Backend call failed, falling back to mock data:", e);
     }
   }
   await new Promise((r) => setTimeout(r, 2400));
-  return MOCK_HOSPITALS;
+  return {
+    hospitals: withDemoTrustBreakdown(MOCK_HOSPITALS),
+    trace: {
+      steps: [
+        "Parsed natural-language query into structured location + capabilities.",
+        "Retrieved candidate facilities via hybrid FAISS + metadata filters.",
+        "Ran capability extraction on each candidate (cache or live LLM).",
+        "Validator: medical rules + optional standards cross-check (Tavily).",
+        "Trust scoring: completeness, consistency, validator, evidence strength.",
+        "Ranked and composed agent reasoning for top results.",
+      ],
+      parsed_query: { query },
+    },
+  };
 }

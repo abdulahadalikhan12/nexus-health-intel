@@ -54,6 +54,13 @@ export interface BackendTrace {
   steps: string[];
 }
 
+export interface BackendTrustBreakdown {
+  completeness: number;
+  consistency: number;
+  validator: number;
+  evidence_strength: number;
+}
+
 export interface BackendHospital {
   facility_id: string;
   name: string;
@@ -67,6 +74,7 @@ export interface BackendHospital {
   /** Optional; when present, UI shows Call / Email actions. */
   phone?: string | null;
   email?: string | null;
+  trust_breakdown?: BackendTrustBreakdown;
 }
 
 export interface BackendQueryResponse {
@@ -211,6 +219,19 @@ export function transformBackendResponse(resp: BackendQueryResponse): Hospital[]
   return resp.results.map((h): Hospital => {
     const finding = findingsById.get(h.facility_id);
     const completeness = finding?.trust.completeness;
+    const tbFromApi = h.trust_breakdown;
+    const tbFromFinding = finding?.trust;
+    const trust_breakdown =
+      tbFromApi ??
+      (tbFromFinding
+        ? {
+            completeness: tbFromFinding.completeness,
+            consistency: tbFromFinding.consistency,
+            validator: tbFromFinding.validator,
+            evidence_strength: tbFromFinding.evidence_strength,
+          }
+        : undefined);
+
     return {
       id: h.facility_id,
       name: h.name,
@@ -230,6 +251,7 @@ export function transformBackendResponse(resp: BackendQueryResponse): Hospital[]
       evidence: buildEvidence(h),
       reasoning: h.reasoning,
       validator: buildValidator(h, finding),
+      trust_breakdown,
       trace: {
         facility_id: h.facility_id,
         capabilities: h.capabilities,
@@ -237,9 +259,8 @@ export function transformBackendResponse(resp: BackendQueryResponse): Hospital[]
         parsed_query: resp.trace.parsed_query,
         retrieved_ids: resp.trace.retrieved_ids,
         steps: resp.trace.steps,
-        // Extra metadata for debugging / future UI:
         verification_passes: finding?.issues.length ?? 0,
-        latency_ms: resp.trace.steps.length * 1000, // best-effort; backend doesn't surface real latency yet
+        latency_ms: resp.trace.steps.length * 1000,
         sources: ["VF India 10k facility notes"],
       },
     };

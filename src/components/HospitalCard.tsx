@@ -4,6 +4,7 @@ import type { Hospital } from "@/lib/mock";
 import { TrustGauge } from "./TrustGauge";
 import { CapabilityBadges } from "./CapabilityBadges";
 import { HospitalContactBar } from "./HospitalContactBar";
+import { TraceabilityPanel } from "./TraceabilityPanel";
 
 interface Props {
   hospital: Hospital;
@@ -70,6 +71,8 @@ export const HospitalCard = ({ hospital }: Props) => (
         })}
       </div>
     )}
+
+    <TraceabilityPanel hospital={hospital} />
 
     <div className="mt-4 sm:mt-5 pt-4 border-t border-border/60">
       <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-mono-tech">

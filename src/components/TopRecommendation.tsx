@@ -3,6 +3,7 @@ import { MapPin, ShieldAlert, Sparkles } from "lucide-react";
 import type { Hospital } from "@/lib/mock";
 import { TrustGauge } from "./TrustGauge";
 import { HospitalContactBar } from "./HospitalContactBar";
+import { TraceabilityPanel } from "./TraceabilityPanel";
 
 interface Props {
   hospital: Hospital;
@@ -124,6 +125,8 @@ export const TopRecommendation = ({ hospital, alternatives }: Props) => {
             <span className="leading-snug">{caveat}</span>
           </div>
         )}
+
+        <TraceabilityPanel hospital={hospital} />
       </div>
     </motion.div>
   );
