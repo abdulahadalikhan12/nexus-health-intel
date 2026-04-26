@@ -1,9 +1,8 @@
 import { motion } from "framer-motion";
-import { MapPin, AlertTriangle, Info, ShieldCheck, ShieldAlert, ShieldX } from "lucide-react";
-import type { Hospital, ValidatorCheck } from "@/lib/mock";
+import { MapPin, AlertTriangle, Info } from "lucide-react";
+import type { Hospital } from "@/lib/mock";
 import { TrustGauge } from "./TrustGauge";
 import { CapabilityBadges } from "./CapabilityBadges";
-import { Collapsible } from "./Collapsible";
 import { HospitalMapLink } from "./HospitalMapLink";
 
 interface Props {
@@ -14,12 +13,6 @@ const cardVariant = {
   hidden: { opacity: 0, y: 60 },
   show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 18 } },
 };
-
-const validatorMeta = {
-  pass: { Icon: ShieldCheck, cls: "text-trust-high border-trust-high/30 bg-trust-high/10" },
-  warn: { Icon: ShieldAlert, cls: "text-trust-mid border-trust-mid/30 bg-trust-mid/10" },
-  fail: { Icon: ShieldX, cls: "text-trust-low border-trust-low/30 bg-trust-low/10" },
-} as const;
 
 export const HospitalCard = ({ hospital }: Props) => (
   <motion.article
@@ -72,46 +65,6 @@ export const HospitalCard = ({ hospital }: Props) => (
         })}
       </div>
     )}
-
-    {/* Collapsibles */}
-    <div className="mt-4 sm:mt-5 space-y-2">
-      <Collapsible title="Evidence" badge={hospital.evidence.length}>
-        <ul className="space-y-3">
-          {hospital.evidence.map((e, i) => (
-            <li key={i} className="rounded-lg bg-secondary/40 border border-border/60 p-3">
-              <div className="flex flex-wrap items-center justify-between gap-2 text-xs mb-1">
-                <span className="font-medium text-foreground/90">{e.source}</span>
-                <span className="font-mono-tech text-muted-foreground">{e.date}</span>
-              </div>
-              <p className="text-xs leading-relaxed">{e.snippet}</p>
-            </li>
-          ))}
-        </ul>
-      </Collapsible>
-      <Collapsible title="Validator passes" badge={hospital.validator.length}>
-        <ul className="space-y-2">
-          {hospital.validator.map((v: ValidatorCheck, i) => {
-            const m = validatorMeta[v.outcome];
-            const Icon = m.Icon;
-            return (
-              <li
-                key={i}
-                className={`flex items-start gap-2 rounded-lg border px-3 py-2 text-xs ${m.cls}`}
-              >
-                <Icon className="size-3.5 mt-0.5 shrink-0" />
-                <div className="min-w-0">
-                  <p className="font-medium text-foreground/90 leading-snug">{v.rule}</p>
-                  <p className="text-muted-foreground mt-0.5 leading-snug">{v.detail}</p>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </Collapsible>
-      <Collapsible title="Reasoning">
-        <p>{hospital.reasoning}</p>
-      </Collapsible>
-    </div>
 
     <div className="mt-4 sm:mt-5 pt-4 border-t border-border/60 flex flex-wrap items-center justify-between gap-2">
       <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-mono-tech">
