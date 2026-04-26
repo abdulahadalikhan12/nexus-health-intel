@@ -1,52 +1,43 @@
 import type { Hospital } from "@/lib/mock";
 import { mailtoHref, telHref } from "@/lib/contact";
-import { syntheticGmailStyle, syntheticIndianPhone } from "@/lib/syntheticContact";
+
+export type ResolvedContact =
+  | { available: true; href: string; newTab: boolean; title: string }
+  | { available: false; title: string };
 
 /**
- * When the API provides a number → `tel:`. When missing, use a per-facility
- * synthetic +91 number (demo / placeholder — not a verified line).
+ * When the API provides a valid number → `tel:`. Otherwise the UI shows Call
+ * as disabled (no synthetic placeholders).
  */
-export function resolveCallAction(h: Hospital): {
-  href: string;
-  newTab: boolean;
-  title: string;
-} {
+export function resolveCallAction(h: Hospital): ResolvedContact {
   const phone = h.phone?.trim();
   if (phone && phone.length >= 8 && !/^nan$/i.test(phone)) {
     const href = telHref(phone);
     if (href !== "#") {
-      return { href, newTab: false, title: `Call ${phone}` };
+      return { available: true, href, newTab: false, title: `Call ${phone}` };
     }
   }
-  const demo = syntheticIndianPhone(h.id);
   return {
-    href: telHref(demo),
-    newTab: false,
-    title: `Demo: synthetic India mobile for UI — ${demo}`,
+    available: false,
+    title: "Phone not available for this facility",
   };
 }
 
 /**
- * When the API provides email → `mailto:`. Otherwise a Gmail-style demo address
- * (compose opens; not guaranteed to be a real inbox).
+ * When the API provides email → `mailto:`. Otherwise Email is disabled.
  */
-export function resolveEmailAction(h: Hospital): {
-  href: string;
-  newTab: boolean;
-  title: string;
-} {
+export function resolveEmailAction(h: Hospital): ResolvedContact {
   const email = h.email?.trim();
   if (email && email.includes("@") && !/^nan$/i.test(email)) {
     return {
+      available: true,
       href: mailtoHref(email, `Inquiry: ${h.name}`),
       newTab: false,
       title: `Email ${email}`,
     };
   }
-  const demo = syntheticGmailStyle(h.name, h.id);
   return {
-    href: mailtoHref(demo, `Inquiry: ${h.name}`),
-    newTab: false,
-    title: `Demo: synthetic email for UI — ${demo}`,
+    available: false,
+    title: "Email not available for this facility",
   };
 }
