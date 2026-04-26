@@ -22,7 +22,7 @@ export function resolveCallAction(h: Hospital): {
   return {
     href: telHref(demo),
     newTab: false,
-    title: `Demo: synthetic India mobile for UI — ${demo}`,
+    title: `Demo mobile (not verified) — ${demo}`,
   };
 }
 
@@ -46,6 +46,6 @@ export function resolveEmailAction(h: Hospital): {
   return {
     href: mailtoHref(demo, `Inquiry: ${h.name}`),
     newTab: false,
-    title: `Demo: synthetic email for UI — ${demo}`,
+    title: `Demo email (not verified) — ${demo}`,
   };
 }
